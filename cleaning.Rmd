@@ -31,7 +31,11 @@ Also load dplyr, tidyr, skimr, ggplot2, stringr.
 
 ```{r}
 library(palmerpenguins)
-
+library(dplyr)
+library(tidyr)
+library(skimr)
+library(ggplot2)
+library(stringr)
 ```
 
 You can learn more about the palmerpenguins
@@ -55,11 +59,11 @@ don't need to worry about the order of the steps.  And write in English, not cod
 
 ## My list of tasks
 
-1. 
-2.
-3.
-4.
-5. 
+1. get simple penguin name from raw
+2. get island (1 to 1)
+3. sizes (1 to 1) (culmen to bill)
+4. lower case sex
+5. get year from date
 
 
 ## Comparing data frames
@@ -83,7 +87,7 @@ In the code chunk below create penguins_new from
 the penguins_raw data set using the assignment operator `<-`. 
 
 ```{r}
-
+penguins_new <- penguins_raw
 ```
 Now run your test code chunk again.
 
@@ -93,7 +97,10 @@ In the code chunk below use base functions to get a sense of the data.  (See sli
 
 
 ```{r}
-
+nrow(penguins_new)
+length(penguins_new)
+names(penguins_new)
+str(penguins_new)
 ```
 
 Another way to get a sense of a data set is to use
@@ -103,12 +110,12 @@ Remember: How do you access a package?
 Do that below.
 
 ```{r}
-
+skim(penguins_new)
 ```
 
 ### Do you notice anything new? What?
 
-
+Not really
 
 ## Start cleaning
 
@@ -196,7 +203,7 @@ A piping example. Notice that penguins_new in the environment doesn't change.
 
 ```{r eval=FALSE}
 penguins_new |> 
-     select(-studyName, -`Sample Number`)  
+     select(-studyName, -`Sample Number`, -Region, -Stage, -`Individual ID`, -`Clutch Completion`, -`Delta 15 N (o/oo)`, -`Delta 13 C (o/oo)`, -Comments)  
 ```
 
 To make it update the penguins_new object, assign
@@ -206,7 +213,7 @@ the next chunk, check the data in the environment.
 
 ```{r}
 penguins_new <- penguins_new |> 
-                select(-studyName, -`Sample Number`) 
+                select(-studyName, -`Sample Number`, -Region, -Stage, -`Individual ID`, -`Clutch Completion`, -`Delta 15 N (o/oo)`, -`Delta 13 C (o/oo)`, -Comments) 
 ```
 Update the above code chunk to get rid of any other
 columns you don't need.  But be careful.
@@ -218,7 +225,7 @@ have it the way you want, assign your changes
 back to the object.
 
 ```{r}
-penguins_new |> rename(newname = oldname)
+penguins_new <- penguins_new |> rename(species = Species, island=Island, bill_length_mm=`Culmen Length (mm)`, bill_depth_mm=`Culmen Depth (mm)`, flipper_length_mm=`Flipper Length (mm)`, body_mass_g=`Body Mass (g)`)
 ```
 
 Don't worry about doing all of them at this point because you can always go back and make changes.
@@ -231,8 +238,8 @@ need to do? How can we find a function to do
 what we want to do?
 
 ```{r}
-penguins_raw |>  
-     mutate(year = WHAT, sex = WHAT)
+penguins_new <- penguins_new |>  
+     mutate(sex = tolower(Sex), year = substr(`Date Egg`, 1, 4))
 ```
 
 Now continue working on your own for a while. 
@@ -250,6 +257,38 @@ attr(df , "attribute name") <- "newvalue"
 
 Deleting an attribute completely.
 attr(df , "attribute name") <- NULL
+```{r}
+penguins_new <- penguins_new |> 
+                select(-Sex, -`Date Egg`)
+```
+```{r}
+penguins_new <- penguins_new |>  
+     mutate(species = word(species, 1))
+```
+```{r}
+penguins_new <- penguins_new |>  
+     mutate(species = as.factor(species), island = as.factor(island), sex=as.factor(sex), year=as.numeric(year))
+```
+```{r}
+attr(penguins_new, "studyName") <- NULL
+attr(penguins_new, "Sample Number") <- NULL
+attr(penguins_new, "Region") <- NULL
+attr(penguins_new, "Stage") <- NULL
+attr(penguins_new, "Individual ID") <- NULL
+attr(penguins_new, "Clutch Completion") <- NULL
+attr(penguins_new, "Delta 15 N (o/oo)") <- NULL
+attr(penguins_new, "Delta 13 C (o/oo)") <- NULL
+attr(penguins_new, "Comments") <- NULL
+attr(penguins_new, "Species") <- "species"
+attr(penguins_new, "Island") <- "island"
+attr(penguins_new, "Culmen Length (mm)") <- "bill_length_mm"
+attr(penguins_new, "Culmen Depth (mm)") <- "bill_depth_mm"
+attr(penguins_new, "Flipper Length (mm)") <- "flipper_length_mm"
+attr(penguins_new, "Body Mass (g)") <- "body_mass_g"
+attr(penguins_new, "Sex") <- "sex"
+attr(penguins_new, "Date Egg") <- "year"
+
+```
 
 
 ### Test code chunk.
